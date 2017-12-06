@@ -5,10 +5,12 @@ class BlendingOptimizer:
     weights = []
     metric = None
     score = None
+    power = None
     
-    def __init__(self, metric, maximize = True):    
+    def __init__(self, metric, maximize = True, power = 1):    
         self.metric = metric
         self.maximize = maximize
+        self.power = power
         
     def is_better_score(self, score_to_test, score):
         cond = score_to_test > score
@@ -34,17 +36,17 @@ class BlendingOptimizer:
         best_score = score + self.maximize -0.5
         
         while self.is_better_score(best_score, score):
-            best_score = self.metric(real, np.average(predictions, weights=weights, axis=0))
+            best_score = self.metric(real, np.average(np.power(predictions, self.power), weights=weights, axis=0)**(1.0/self.power))
             score = best_score
             best_index, best_step = -1, 0.0
             for j in range(le):
                 delta = np.array([(0 if k != j else step) for k in range(le)])
-                s = self.metric(real, np.average(predictions, weights=weights+delta, axis=0))
+                s = self.metric(real, np.average(np.power(predictions, self.power), weights=weights+delta, axis=0)**(1.0/self.power))
                 if self.is_better_score(s, best_score):
                     best_index, best_score, best_step = j, s, step
                     continue
                 if weights[j] - step >= 0:
-                    s = self.metric(real, np.average(predictions, weights=weights-delta, axis=0))
+                    s = self.metric(real, np.average(np.power(predictions, self.power), weights=weights-delta, axis=0)**(1.0/self.power))
                     if(s > best_score):
                         best_index, best_score, best_step = j, s, -step
             if self.is_better_score(best_score, score):
@@ -55,4 +57,4 @@ class BlendingOptimizer:
         return weights
     
     def predict(self, predictions):
-        return np.average(predictions, weights = self.weights, axis = 0)
+        return np.average(np.power(predictions, self.power), weights = self.weights, axis = 0)**(1.0/self.power)
