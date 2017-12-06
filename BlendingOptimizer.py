@@ -57,4 +57,6 @@ class BlendingOptimizer:
         return weights
     
     def predict(self, predictions):
+        assert(np.shape(predictions)[0] == len(self.weights))
         return np.average(np.power(predictions, self.power), weights = self.weights, axis = 0)**(1.0/self.power)
+
