@@ -1,17 +1,14 @@
 import numpy as np
 
 class BlendingOptimizer:
-    maximize = True
-    weights = []
-    metric = None
-    score = None
-    power = None
     
     def __init__(self, metric, maximize = True, power = 1):    
         self.metric = metric
         self.maximize = maximize
         self.power = power
-        
+        self.score = -1
+        self.power = 1
+
     def is_better_score(self, score_to_test, score):
         cond = score_to_test > score
         return cond if self.maximize else not cond
