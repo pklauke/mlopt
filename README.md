@@ -3,6 +3,7 @@
 Python class for optimizing the weights in model ensemble blending. 
 
 Example:
+
         >>> from sklearn.metrics import mean_absolute_error
         >>> from ensemble.blending_optimizer import BlendingOptimzier
 
