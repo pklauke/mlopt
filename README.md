@@ -1,6 +1,6 @@
-# Ensemble
+# mlopt
 
-Python class for optimizing the weights in model ensemble blending. 
+Python library including algorithms for optimization problems like weighted blending, hyperparameter tuning and more.
 
 Example:
 
