@@ -8,5 +8,5 @@ setup(name='mlopt',
       description='Package for Machine Learning optimization problems.',
       url='https://github.com/pklauke/mlopt',
       author='Peter Klauke',
-      packages=['ensemble'],
+      packages=['mlopt'],
       zip_safe=False)
