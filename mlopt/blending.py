@@ -42,6 +42,7 @@ class BlendingSwarmTransformer(mlopt.optimization.ParticleSwarmOptimizer, mlopt.
         params = {'x' + str(i): (0, 2) for i in range(np.shape(X)[0])}
         self.optimize(params=params, inertia=inertia, c_cog=c_cog, c_soc=c_soc,
                       learning_rate=learning_rate, iterations=iterations, random_state=random_state)
+        return self
 
     def transform(self, X):
         """Transform blended predictions using the trained weights.
