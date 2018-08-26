@@ -18,11 +18,7 @@ class BlendingSwarmTransformer(mlopt.optimization.ParticleSwarmOptimizer, mlopt.
 
     def _calc_scores(self):
         """Calculate the score of the objective metric for each particle."""
-        scores = [self.func(X=self.X, y=self.y, weights=coord) for coord in self.coords]
-        if self.best_score_glob is not None:
-            print('id: {}, AUC: {:0.7f}, best AUC: {:0.7f}'.format(self._best_particle_idx, np.max(scores),
-                                                                   self.best_score_glob))
-        return scores
+        return [self.func(X=self.X, y=self.y, weights=coord) for coord in self.coords]
 
     @staticmethod
     def __weighted_average(X, weights):
@@ -75,7 +71,7 @@ class BlendingGreedyTransformer(mlopt.TransformerMixin):
         >>> p_model_2 = [0.07, 0.21, 0.29, 0.33, 0.53, 0.54, 0.74, 0.74, 0.91]
         >>> p = [p_model_1, p_model_2]
 
-        >>> opt = BlendingTransformer(metric=mean_absolute_error, maximize=False)
+        >>> opt = BlendingGreedyTransformer(metric=mean_absolute_error, maximize=False)
         >>> weights = opt.optimize(y=y, X=p)
         >>> print('MAE 1: {:0.3f}'.format(mean_absolute_error(y, p_model_1)))
         >>> print('MAE 2: {:0.3f}'.format(mean_absolute_error(y, p_model_2)))
