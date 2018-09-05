@@ -66,8 +66,6 @@ class ParticleSwarmOptimizer(object):
         self.best_score_glob = self.best_scores[self._best_particle_idx]
         self.best_coords_glob = self.best_coords[self._best_particle_idx].copy()
 
-        self._coords_history.append(self.coords)
-
     def update(self, params: Dict[str, Tuple[float, float]], inertia: float = 0.5, c_cog: float = 2.0,
                c_soc: float = 2.0, learning_rate: float = 0.1):
         """Synchronously updates all particles velocities and positions once.
