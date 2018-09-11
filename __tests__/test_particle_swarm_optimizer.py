@@ -1,16 +1,20 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""This module contains unit tests for testing the mlopt.blending.ParticleSwarmOptimizer class."""
+
 import numpy as np
 
 from mlopt.optimization import ParticleSwarmOptimizer
 
 
 def opt_func(x, y):
+    """Function for minimization testing."""
     return x**2 + y**2
 
 
 def opt_func_inv(x, y):
+    """Function for maximization testing."""
     return - opt_func(x, y)
 
 
@@ -125,10 +129,11 @@ def test_update_monotonic_best_scores_minimize():
     scores = {p: [pso.best_scores[p]] for p in range(20)}
     for i in range(100):
         pso.update(params)
-        for p in range(20):
-            scores[p] = scores[p] + [pso.best_scores[p]]
+        for particle in range(20):
+            scores[particle] = scores[particle] + [pso.best_scores[particle]]
 
-    assert all(all(scores[p][i+1] <= scores[p][i] for i in range(len(scores[p])-1)) for p in range(20))
+    assert all(all(scores[particle][i+1] <= scores[particle][i] for i in range(len(scores[particle])-1))
+               for particle in range(20))
 
 
 def test_update_monotonic_best_score_glob_maximize():
@@ -156,10 +161,11 @@ def test_update_monotonic_best_scores_maximize():
     scores = {p: [pso.best_scores[p]] for p in range(20)}
     for i in range(100):
         pso.update(params)
-        for p in range(20):
-            scores[p] = scores[p] + [pso.best_scores[p]]
+        for particle in range(20):
+            scores[particle] = scores[particle] + [pso.best_scores[particle]]
 
-    assert all(all(scores[p][i+1] >= scores[p][i] for i in range(len(scores[p])-1)) for p in range(20))
+    assert all(all(scores[particle][i+1] >= scores[particle][i] for i in range(len(scores[particle])-1))
+               for particle in range(20))
 
 
 def test_coord_history_correct_dimension():
