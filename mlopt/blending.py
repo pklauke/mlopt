@@ -1,16 +1,25 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""This module contains classes for maximizing or minimizing a given metric. Currently implemented classes are:
+
+BlendingSwarmTransformer: Uses particle swarm optimization.
+BlendingGreedyTransformer: Uses a greedy approach.
+"""
+
 import numpy as np
 
 import mlopt.optimization
 
 
 class BlendingSwarmTransformer(mlopt.optimization.ParticleSwarmOptimizer, mlopt.TransformerMixin):
-    def __init__(self, metric, maximize, particles=20):
-        """Optimizer to minimize or maximize an objective metric using Particle Swarm Optimization.
+    """Optimizer to minimize or maximize an objective metric using Particle Swarm Optimization.
 
-        :param metric: Callable function to optimize.
-        :param maximize: Boolean indicating whether `metric` wants to be maximized or minimized.
-        :param particles: Number of particles to use.
-        """
+    :param metric: Callable function to optimize.
+    :param maximize: Boolean indicating whether `metric` wants to be maximized or minimized.
+    :param particles: Number of particles to use.
+    """
+    def __init__(self, metric, maximize, particles=20):
         super().__init__(func=lambda X, y, weights: metric(y, self.__weighted_average(X, weights)),
                          maximize=maximize, particles=particles)
         self.X = None
@@ -85,14 +94,14 @@ class BlendingGreedyTransformer(mlopt.TransformerMixin):
         self._power = power
         self._score = None
         self._weights = None
-        
+
     def fit(self, X, y, step_size=0.1, init_weights=None, warm_start: bool = False):
         """Fit the model on the given predictions.
 
         :param X: Predictions of different models for the labels.
         :param y: Labels.
-        :param step_size: Step size for optimizing the weights. Smaller step sizes most likely improve resulting score but
-                     increase training time.
+        :param step_size: Step size for optimizing the weights. Smaller step sizes most likely improve resulting score
+                          but increase training time.
         :param init_weights: Initial weights for training.
         :param warm_start: Continues training. Will only work when `fit` has been called with this object earlier.
                            Ignores `init_weights``
@@ -111,46 +120,48 @@ class BlendingGreedyTransformer(mlopt.TransformerMixin):
 
         def __is_better_score(score_to_test, score):
             return score_to_test > score if self.maximize else not score_to_test > score
-        
+
         if warm_start:
             assert self._weights is not None, 'Optimizer has to be fitted before `warm_start` can be used.'
-            weights = self._weights
         elif init_weights is None:
-            weights = np.array([1.0] * len(X))
+            self._weights = np.array([1.0] * len(X))
         else:
             assert (len(init_weights) == np.shape(X)[0]), (
                 'BlendingOptimizer: Number of models to blend its predictions and weights does not match: '
                 'n_models={}, weights_len={}'.format(np.shape(X)[0], len(init_weights)))
-            weights = init_weights
+            self._weights = init_weights
 
         score = 0
         best_score = self.maximize - 0.5
-        
+
         while __is_better_score(best_score, score):
-            best_score = self.metric(y, np.average(np.power(X, self._power), weights=weights, axis=0) ** (
-                        1.0 / self._power))
+            best_score = self.metric(y, np.average(np.power(X, self._power), weights=self._weights, axis=0))
+            best_score = best_score ** (1.0 / self._power)
+
             score = best_score
             best_index, best_step = -1, 0.0
             for j in range(len(X)):
                 delta = np.array([(0 if k != j else step_size) for k in range(len(X))])
-                s = self.metric(y, np.average(np.power(X, self._power), weights=weights + delta, axis=0) ** (
-                            1.0 / self._power))
-                if __is_better_score(s, best_score):
-                    best_index, best_score, best_step = j, s, step_size
+                curr_score = self.metric(y, np.average(np.power(X, self._power), weights=self._weights + delta, axis=0))
+                curr_score = curr_score ** (1.0 / self._power)
+
+                if __is_better_score(curr_score, best_score):
+                    best_index, best_score, best_step = j, curr_score, step_size
                     continue
-                if weights[j] - step_size >= 0:
-                    s = self.metric(y, np.average(np.power(X, self._power), weights=weights - delta, axis=0) ** (
-                                1.0 / self._power))
-                    if s > best_score:
-                        best_index, best_score, best_step = j, s, -step_size
+                if self._weights[j] - step_size >= 0:
+                    curr_score = self.metric(y, np.average(np.power(X, self._power),
+                                                           weights=self._weights - delta, axis=0))
+                    curr_score = curr_score ** (1.0 / self._power)
+
+                    if curr_score > best_score:
+                        best_index, best_score, best_step = j, curr_score, -step_size
             if __is_better_score(best_score, score):
-                weights[best_index] += best_step
-                
-        self._weights = weights
+                self._weights[best_index] += best_step
+
         self._score = best_score
 
-        return weights
-    
+        return self._weights
+
     def transform(self, X):
         """Transform blended predictions using the trained weights.
 
@@ -158,7 +169,7 @@ class BlendingGreedyTransformer(mlopt.TransformerMixin):
         :return: Blended predictions.
         """
         assert np.shape(X)[0] == len(self._weights), (
-               'Length of predictions and weights does not match: {} != {}'.format(np.shape(X)[0], len(self._weights)))
+            'Length of predictions and weights does not match: {} != {}'.format(np.shape(X)[0], len(self._weights)))
         return np.average(np.power(X, self._power), weights=self._weights, axis=0) ** (1.0 / self._power)
 
     def fit_transform(self, X, y, step_size=0.1, init_weights=None, warm_start=False):

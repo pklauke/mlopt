@@ -1,22 +1,28 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""This module contains classes for solving optimization problems. Currently implemented classes are:
+
+ParticleSwarmOptimizer: Uses particle swarm optimization to maximize or minimize a given function.
+"""
+
 from typing import Callable, List, Dict, Tuple, Union
 
 import numpy as np
 
 
-class ParticleSwarmOptimizer(object):
+class ParticleSwarmOptimizer:
+    """Optimizer to minimize or maximize an objective function using Particle Swarm Optimization. The whole
+    optimization can either be executed using the method `optimize` at once or iteratively using the `init` and
+    `update` methods.
+
+    :param func: Callable function to optimize.
+    :param maximize: Boolean indicating whether `func` wants to be maximized or minimized.
+    :param particles: Number of particles to use.
+    """
 
     def __init__(self, func: Callable, maximize: bool, particles: int = 20):
-        """Optimizer to minimize or maximize an objective function using Particle Swarm Optimization. The whole
-        optimization can either be executed using the method `optimize` at once or iteratively using the `init` and
-        `update` methods.
 
-        :param func: Callable function to optimize.
-        :param maximize: Boolean indicating whether `func` wants to be maximized or minimized.
-        :param particles: Number of particles to use.
-        """
         self.func = func
         self.maximize = maximize
         self.particles = particles
@@ -53,7 +59,7 @@ class ParticleSwarmOptimizer(object):
         self.velocities = (np.random.random((self.particles, len(params))) - 0.5) * 2 * lst_vel_norm
         self.coords = np.random.random((self.particles, len(params)))
         for i in range(self.particles):
-            for j, (key, value) in enumerate(params.items()):
+            for j, value in enumerate(params.values()):
                 self.coords[i, j] = self.coords[i, j] * (value[1] - value[0]) + value[0]
         self.best_coords = self.coords
 
@@ -130,7 +136,7 @@ class ParticleSwarmOptimizer(object):
         """
         self.init(params=params, random_state=random_state)
 
-        for i in range(iterations):
+        for _ in range(iterations):
             self.update(params=params, inertia=inertia, c_cog=c_cog, c_soc=c_soc, learning_rate=learning_rate)
 
         return self
