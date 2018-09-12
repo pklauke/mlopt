@@ -13,7 +13,8 @@ Afterwards it can be installed with
         cd mlopt 
         python3 setup.py install
 
-Example:
+# Usage
+Example for weighted blending with greedy optimization:
 
         from sklearn.metrics import mean_absolute_error
         from ensemble.blending_optimizer import BlendingGreedyOptimzier
