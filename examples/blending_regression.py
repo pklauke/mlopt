@@ -12,9 +12,9 @@ if __name__ == '__main__':
     p_model_2 = [0.07, 0.21, 0.29, 0.33, 0.53, 0.54, 0.74, 0.74, 0.91]
     p = [p_model_1, p_model_2]
 
-    opt = BlendingTransformer(metric=mean_absolute_error, maximize=False)
-    weights = opt.fit(y=y, X=p)
+    opt = BlendingTransformer(metric=mean_absolute_error, maximize=False, optimizer='greedy')
+    opt.fit(y=y, X=p)
     print('MAE 1: {:0.3f}'.format(mean_absolute_error(y, p_model_1)))
     print('MAE 2: {:0.3f}'.format(mean_absolute_error(y, p_model_2)))
-    print('Optimized blending weights: ', weights)
-    print('MAE blended: {:0.3f}'.format(opt._score))
+    print('Optimized blending weights: ', opt.optimizer.coords)
+    print('MAE blended: {:0.3f}'.format(mean_absolute_error(y, opt.transform(p))))

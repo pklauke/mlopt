@@ -5,7 +5,7 @@
 
 from sklearn.metrics import mean_absolute_error, roc_auc_score
 
-from mlopt.blending import BlendingGreedyTransformer
+from mlopt.blending import BlendingTransformer
 
 
 def test_blended_predictions_correct_dimensions():
@@ -15,7 +15,7 @@ def test_blended_predictions_correct_dimensions():
     predictions_0 = [0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99]
     predictions_1 = [0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02]
 
-    bst = BlendingGreedyTransformer(metric=mean_absolute_error, maximize=False)
+    bst = BlendingTransformer(metric=mean_absolute_error, maximize=False)
     p_blended = bst.fit_transform([predictions_0, predictions_1], target)
 
     assert p_blended.shape == (len(target), )
@@ -28,7 +28,7 @@ def test_fixed_random_state_deterministic_minimize():
     predictions_0 = [0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99]
     predictions_1 = [0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02]
 
-    bst = BlendingGreedyTransformer(metric=mean_absolute_error, maximize=False)
+    bst = BlendingTransformer(metric=mean_absolute_error, maximize=False)
     p_blended_0 = bst.fit_transform([predictions_0, predictions_1], target)
     p_blended_1 = bst.fit_transform([predictions_0, predictions_1], target)
 
@@ -43,7 +43,7 @@ def test_blended_results_minimize():
     predictions_0 = [0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99]
     predictions_1 = [0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02]
 
-    bst = BlendingGreedyTransformer(metric=mean_absolute_error, maximize=False)
+    bst = BlendingTransformer(metric=mean_absolute_error, maximize=False)
     p_blended = bst.fit_transform([predictions_0, predictions_1], target)
 
     mse_0 = mean_absolute_error(target, predictions_0)
@@ -60,7 +60,7 @@ def test_deterministic_maximize():
     predictions_0 = [0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99]
     predictions_1 = [0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02]
 
-    bst = BlendingGreedyTransformer(metric=roc_auc_score, maximize=True)
+    bst = BlendingTransformer(metric=roc_auc_score, maximize=True)
     p_blended_0 = bst.fit_transform([predictions_0, predictions_1], target)
     p_blended_1 = bst.fit_transform([predictions_0, predictions_1], target)
 
@@ -75,7 +75,7 @@ def test_blended_results_maximize():
     predictions_0 = [0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99]
     predictions_1 = [0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02]
 
-    bst = BlendingGreedyTransformer(metric=roc_auc_score, maximize=True)
+    bst = BlendingTransformer(metric=roc_auc_score, maximize=True)
     p_blended = bst.fit_transform([predictions_0, predictions_1], target)
 
     auc_0 = roc_auc_score(target, predictions_0)
