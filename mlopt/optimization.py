@@ -191,13 +191,11 @@ class GreedyOptimizer:
         def __better_score(x, y, maximize: bool):
             return x > y if maximize else x < y
 
-        score = 0
-        best_score = self.maximize - 0.5
+        best_score = None
 
-        while __better_score(best_score, score, self.maximize):
-            best_score = self.func(*self.coords)
+        while best_score is None or __better_score(best_score, self.score, self.maximize):
+            best_score = self.score
 
-            score = best_score
             best_index, best_step = -1, 0.0
             for j in range(len(params)):
                 delta = np.array([(0 if k != j else step_size) for k in range(len(params))])
@@ -209,10 +207,10 @@ class GreedyOptimizer:
                         continue
 
                 if self.coords[j] - step_size >= self._lower_bounds[j]:
-                    curr_score = self.func(*(self.coords+delta))
-                    if curr_score > best_score:
+                    curr_score = self.func(*(self.coords-delta))
+                    if __better_score(curr_score, best_score, self.maximize):
                         best_index, best_score, best_step = j, curr_score, -step_size
-            if __better_score(best_score, score, self.maximize):
+            if __better_score(best_score, self.score, self.maximize):
                 self.coords[best_index] += best_step
                 self.score = best_score
 
