@@ -23,7 +23,7 @@ class BlendingTransformer:
         self.X = None
         self.y = None
 
-        def _func(weights):
+        def _func(*weights):
             return self.metric(self.y, np.average(self.X, axis=0, weights=weights))
 
         if optimizer.lower() == 'pso':
@@ -35,6 +35,16 @@ class BlendingTransformer:
                 self.optimizer = optimizer
             else:
                 raise AttributeError('Provided optimizer does not have a optimize method.')
+
+    @property
+    def weights(self):
+        """Provide read-only access to the weights used for blending."""
+        return self.optimizer.coords
+
+    @property
+    def score(self):
+        """Provide read-only access to the blending score."""
+        return self.optimizer.score
 
     def fit(self, X, y, iterations=100, random_state=None, params=None):
         """Fit the model on the given predictions.

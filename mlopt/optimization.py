@@ -160,6 +160,8 @@ class GreedyOptimizer:
         self.coords = None
         self.score = None
         self.coords_history = None
+        self._lower_bounds = None
+        self._upper_bounds = None
 
     def init(self, params: Dict[str, Tuple[float, float]], random_state: Union[int, None] = None):
         """Initialize the coordinates of the GreedyOptimizer.
@@ -169,7 +171,14 @@ class GreedyOptimizer:
         :param random_state: Random state for initializing.
         :return: None
         """
-        self.coords = np.array([(max_-min_)/2 for min_, max_ in params.values()])
+        self._lower_bounds = [lower for lower, _ in params.values()]
+        self._upper_bounds = [upper for _, upper in params.values()]
+        self.coords = np.array([(upper+lower) / 2 for lower, upper in zip(self._lower_bounds, self._upper_bounds)])
+
+        self.score = self.func(*self.coords)
+
+        self.coords_history = []
+        self.coords_history.append(self.coords)
 
     def update(self, params: Dict[str, Tuple[float, float]], step_size: float = 0.1):
         """Update all coordinates for one step.
@@ -179,33 +188,35 @@ class GreedyOptimizer:
         :param step_size: Size of the step the coordinates will change.
         :return: None
         """
-        def __is_better_score(score_to_test, score_):
-            return score_to_test > score_ if self.maximize else not score_to_test > score_
+        def __better_score(x, y, maximize: bool):
+            return x > y if maximize else x < y
 
         score = 0
         best_score = self.maximize - 0.5
 
-        while __is_better_score(best_score, score):
-            best_score = self.func(weights=self.coords)
+        while __better_score(best_score, score, self.maximize):
+            best_score = self.func(*self.coords)
 
             score = best_score
             best_index, best_step = -1, 0.0
             for j in range(len(params)):
                 delta = np.array([(0 if k != j else step_size) for k in range(len(params))])
-                curr_score = self.func(weights=self.coords+delta)
 
-                if __is_better_score(curr_score, best_score):
-                    best_index, best_score, best_step = j, curr_score, step_size
-                    continue
-                if self.coords[j] - step_size >= 0:
-                    curr_score = self.func(weights=self.coords-delta)
+                if self.coords[j] + step_size <= self._upper_bounds[j]:
+                    curr_score = self.func(*(self.coords+delta))
+                    if __better_score(curr_score, best_score, self.maximize):
+                        best_index, best_score, best_step = j, curr_score, step_size
+                        continue
 
+                if self.coords[j] - step_size >= self._lower_bounds[j]:
+                    curr_score = self.func(*(self.coords+delta))
                     if curr_score > best_score:
                         best_index, best_score, best_step = j, curr_score, -step_size
-            if __is_better_score(best_score, score):
+            if __better_score(best_score, score, self.maximize):
                 self.coords[best_index] += best_step
+                self.score = best_score
 
-        self.score = best_score
+        self.coords_history.append(self.coords.copy())
 
     def optimize(self, params: Dict[str, Tuple[float, float]], step_size=0.1, iterations: int = 100,
                  random_state: Union[int, None] = None):
