@@ -37,6 +37,6 @@ if __name__ == '__main__':
     params = {'max_depth': (1, 20), 'min_samples_leaf': (1, 20)}
     bso.optimize(params=params, random_state=1, iterations=10)
 
-    print('Best AUC: {:0.4f}, max_depth: {}, min_samples_leaf: {}'.format(bso.best_score,
+    print('Best AUC: {:0.4f}, max_depth: {}, min_samples_leaf: {}'.format(bso.score,
                                                                           int(bso.coords[0]),
                                                                           int(bso.coords[1])))

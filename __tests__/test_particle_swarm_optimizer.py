@@ -25,7 +25,7 @@ def test_init_correct_dimensions_velocities():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    assert pso.velocities.shape == (20, 2)
+    assert pso._velocities.shape == (20, 2)
 
 
 def test_init_correct_dimensions_coords():
@@ -35,7 +35,7 @@ def test_init_correct_dimensions_coords():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    assert pso._coords.shape == (20, 2)
+    assert pso._coords_all.shape == (20, 2)
 
 
 def test_init_correct_dimensions_best_coords():
@@ -65,7 +65,7 @@ def test_init_correct_dimensions_best_scores():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    assert len(pso._best_score_all) == 20
+    assert len(pso._score_all) == 20
 
 
 def test_init_correct_dimensions_best_score_glob():
@@ -74,8 +74,8 @@ def test_init_correct_dimensions_best_score_glob():
 
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
-    print('best score', pso.best_score)
-    assert np.shape(pso.best_score) == ()
+    print('best score', pso.score)
+    assert np.shape(pso.score) == ()
 
 
 def test_init_deterministic_random_state():
@@ -84,9 +84,9 @@ def test_init_deterministic_random_state():
 
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
-    coords0 = pso._coords
+    coords0 = pso._coords_all
     pso.init(params=params, random_state=1)
-    coords1 = pso._coords
+    coords1 = pso._coords_all
 
     assert all(val0 == val1 for row0, row1 in zip(coords0, coords1) for val0, val1 in zip(row0, row1))
 
@@ -97,9 +97,9 @@ def test_init_different_random_state():
 
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
-    coords0 = pso._coords
+    coords0 = pso._coords_all
     pso.init(params=params, random_state=2)
-    coords1 = pso._coords
+    coords1 = pso._coords_all
 
     assert any(val0 != val1 for row0, row1 in zip(coords0, coords1) for val0, val1 in zip(row0, row1))
 
@@ -111,10 +111,10 @@ def test_update_monotonic_best_score_glob_minimize():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    scores = [pso.best_score]
+    scores = [pso.score]
     for i in range(100):
         pso.update(params)
-        scores.append(pso.best_score)
+        scores.append(pso.score)
 
     assert all(scores[i+1] <= scores[i] for i in range(len(scores)-1))
 
@@ -126,11 +126,11 @@ def test_update_monotonic_best_scores_minimize():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    scores = {p: [pso._best_score_all[p]] for p in range(20)}
+    scores = {p: [pso._score_all[p]] for p in range(20)}
     for i in range(100):
         pso.update(params)
         for particle in range(20):
-            scores[particle] = scores[particle] + [pso._best_score_all[particle]]
+            scores[particle] = scores[particle] + [pso._score_all[particle]]
 
     assert all(all(scores[particle][i+1] <= scores[particle][i] for i in range(len(scores[particle])-1))
                for particle in range(20))
@@ -143,10 +143,10 @@ def test_update_monotonic_best_score_glob_maximize():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    scores = [pso.best_score]
+    scores = [pso.score]
     for i in range(100):
         pso.update(params)
-        scores.append(pso.best_score)
+        scores.append(pso.score)
 
     assert all(scores[i+1] >= scores[i] for i in range(len(scores)-1))
 
@@ -158,11 +158,11 @@ def test_update_monotonic_best_scores_maximize():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.init(params=params, random_state=1)
 
-    scores = {p: [pso._best_score_all[p]] for p in range(20)}
+    scores = {p: [pso._score_all[p]] for p in range(20)}
     for i in range(100):
         pso.update(params)
         for particle in range(20):
-            scores[particle] = scores[particle] + [pso._best_score_all[particle]]
+            scores[particle] = scores[particle] + [pso._score_all[particle]]
 
     assert all(all(scores[particle][i+1] >= scores[particle][i] for i in range(len(scores[particle])-1))
                for particle in range(20))
@@ -175,7 +175,7 @@ def test_coord_history_correct_dimension():
     params = {'x': (-1, 1), 'y': (-1, 1)}
     pso.optimize(params, iterations=20)
 
-    history = pso.get_history()
+    history = pso.coords_history
 
     assert len(history) == 21
     assert all(history[i].shape == (20, 2) for i in range(20))

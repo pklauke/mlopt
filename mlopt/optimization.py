@@ -26,18 +26,18 @@ class ParticleSwarmOptimizer:
         self.func = func
         self.maximize = maximize
         self.particles = particles
-        self.velocities = None
-        self._coords = None
+        self._velocities = None
+        self._coords_all = None
         self._best_coords_all = None
         self.coords = None
-        self._best_score_all = None
-        self.best_score = None
+        self._score_all = None
+        self.score = None
         self._best_particle_idx = None
-        self._coords_history = None
+        self.coords_history = None
 
     def _calc_scores(self) -> List[float]:
         """Calculate the value of `func` for each particle."""
-        return [self.func(*self._coords[i, :]) for i in range(np.shape(self._coords)[0])]
+        return [self.func(*self._coords_all[i, :]) for i in range(np.shape(self._coords_all)[0])]
 
     @staticmethod
     def __next_velocity(inertia: float, velocities, coords, best_coords, best_coords_glob, c_cog: float, c_soc: float):
@@ -56,20 +56,20 @@ class ParticleSwarmOptimizer:
         np.random.seed(random_state)
 
         lst_vel_norm = [[end - begin for begin, end in params.values()] for _ in range(self.particles)]
-        self.velocities = (np.random.random((self.particles, len(params))) - 0.5) * 2 * lst_vel_norm
-        self._coords = np.random.random((self.particles, len(params)))
+        self._velocities = (np.random.random((self.particles, len(params))) - 0.5) * 2 * lst_vel_norm
+        self._coords_all = np.random.random((self.particles, len(params)))
         for i in range(self.particles):
             for j, value in enumerate(params.values()):
-                self._coords[i, j] = self._coords[i, j] * (value[1] - value[0]) + value[0]
-        self._best_coords_all = self._coords
+                self._coords_all[i, j] = self._coords_all[i, j] * (value[1] - value[0]) + value[0]
+        self._best_coords_all = self._coords_all
 
-        self._coords_history = []
-        self._coords_history.append(self._coords)
+        self.coords_history = []
+        self.coords_history.append(self._coords_all)
 
         scores = self._calc_scores()
-        self._best_score_all = scores
-        self._best_particle_idx = np.argmax(self._best_score_all) if self.maximize else np.argmin(self._best_score_all)
-        self.best_score = self._best_score_all[self._best_particle_idx]
+        self._score_all = scores
+        self._best_particle_idx = np.argmax(self._score_all) if self.maximize else np.argmin(self._score_all)
+        self.score = self._score_all[self._best_particle_idx]
         self.coords = self._best_coords_all[self._best_particle_idx].copy()
 
     def update(self, params: Dict[str, Tuple[float, float]], inertia: float = 0.5, c_cog: float = 2.0,
@@ -90,33 +90,35 @@ class ParticleSwarmOptimizer:
         :param learning_rate: Rate at which the position of the particles gets updated in respect to their velocity.
         :return: None
         """
-        self.velocities = self.__next_velocity(inertia, self.velocities, self._coords, self._best_coords_all,
-                                               self.coords, c_cog, c_soc)
-        self._coords += self.velocities * learning_rate
+        self._velocities = self.__next_velocity(inertia, self._velocities, self._coords_all,
+                                                self._best_coords_all, self.coords, c_cog, c_soc)
+        self._coords_all += self._velocities * learning_rate
         lst_clip_range = [tup for tup in params.values()]
         for dim_idx in range(len(params)):
-            self._coords[:, dim_idx] = self._coords[:, dim_idx].clip(lst_clip_range[dim_idx][0],
-                                                                     lst_clip_range[dim_idx][1])
+            self._coords_all[:, dim_idx] = self._coords_all[:, dim_idx].clip(lst_clip_range[dim_idx][0],
+                                                                             lst_clip_range[dim_idx][1])
 
         def __better_score(x, y, maximize: bool):
             return x > y if maximize else x < y
 
         lst_scores = self._calc_scores()
         if self.maximize:
-            tmp = np.argmax([self._best_score_all, lst_scores], axis=0)
-            self._best_coords_all = np.array([bc if s == 0 else c for bc, c, s in zip(self._best_coords_all, self._coords, tmp)])
-            self._best_score_all = np.max([self._best_score_all, lst_scores], axis=0)
-            self._best_particle_idx = np.argmax(self._best_score_all)
+            tmp = np.argmax([self._score_all, lst_scores], axis=0)
+            self._best_coords_all = np.array([bc if s == 0 else c for bc, c, s in zip(self._best_coords_all,
+                                                                                      self._coords_all, tmp)])
+            self._score_all = np.max([self._score_all, lst_scores], axis=0)
+            self._best_particle_idx = np.argmax(self._score_all)
         else:
-            tmp = np.argmin([self._best_score_all, lst_scores], axis=0)
-            self._best_coords_all = np.array([bc if s == 0 else c for bc, c, s in zip(self._best_coords_all, self._coords, tmp)])
-            self._best_score_all = np.min([self._best_score_all, lst_scores], axis=0)
-            self._best_particle_idx = np.argmin(self._best_score_all)
+            tmp = np.argmin([self._score_all, lst_scores], axis=0)
+            self._best_coords_all = np.array([bc if s == 0 else c for bc, c, s in zip(self._best_coords_all,
+                                                                                      self._coords_all, tmp)])
+            self._score_all = np.min([self._score_all, lst_scores], axis=0)
+            self._best_particle_idx = np.argmin(self._score_all)
 
-        if __better_score(self._best_score_all[self._best_particle_idx], self.best_score, maximize=self.maximize):
-            self.best_score = self._best_score_all[self._best_particle_idx]
-            self.coords = self._coords[self._best_particle_idx].copy()
-        self._coords_history.append(self._coords.copy())
+        if __better_score(self._score_all[self._best_particle_idx], self.score, maximize=self.maximize):
+            self.score = self._score_all[self._best_particle_idx]
+            self.coords = self._coords_all[self._best_particle_idx].copy()
+        self.coords_history.append(self._coords_all.copy())
 
     def optimize(self, params: Dict[str, Tuple[float, float]], inertia: float = 0.8, c_cog: float = 2.0,
                  c_soc: float = 2.0, learning_rate: float = 0.1, iterations: int = 100,
@@ -141,11 +143,6 @@ class ParticleSwarmOptimizer:
 
         return self
 
-    def get_history(self):
-        """Return the position history of each particle."""
-        assert self._coords_history is not None, 'Coordinate history is not saved. Call `optimize` first.'
-        return self._coords_history
-
 
 class GreedyOptimizer:
     """Optimizer to minimize or maximize an objective function using a greedy approach. The whole
@@ -162,7 +159,7 @@ class GreedyOptimizer:
         self.maximize = maximize
         self.coords = None
         self.score = None
-        self._coords_history = None
+        self.coords_history = None
 
     def init(self, params: Dict[str, Tuple[float, float]], random_state: Union[int, None] = None):
         """Initialize the coordinates of the GreedyOptimizer.
@@ -227,8 +224,3 @@ class GreedyOptimizer:
             self.update(params=params, step_size=step_size)
 
         return self
-
-    def get_history(self):
-        """Return the position history of each particle."""
-        assert self._coords_history is not None, 'Coordinate history is not saved. Call `optimize` first.'
-        return self._coords_history
