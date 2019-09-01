@@ -18,6 +18,6 @@ if __name__ == '__main__':
     bso = ParticleSwarmOptimizer(func=ackley_func, maximize=False, particles=20)
     bso.optimize(params={'x': (-4.0, 4.0), 'y': (-4.0, 4.0)}, inertia=0.8, c_cog=2, c_soc=2,
                  learning_rate=0.01, random_state=None, iterations=300)
-    lst_coords = bso.get_history()
+    lst_coords = bso.coords_history
 
     create_gif(obj_func=ackley_func, linspace=linspace, coords=lst_coords, xlim=(-4, 4), ylim=(-4, 4))
