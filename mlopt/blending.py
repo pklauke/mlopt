@@ -26,12 +26,13 @@ class BlendingTransformer:
         def _func(*weights):
             return self.metric(self.y, np.average(self.X, axis=0, weights=weights))
 
-        if optimizer.lower() == 'pso':
-            self.optimizer = mlopt.optimization.ParticleSwarmOptimizer(func=_func, maximize=maximize)
-        elif optimizer.lower() == 'greedy':
-            self.optimizer = mlopt.optimization.GreedyOptimizer(func=_func, maximize=maximize)
+        if isinstance(optimizer, str):
+            if optimizer.lower() == 'pso':
+                self.optimizer = mlopt.optimization.ParticleSwarmOptimizer(func=_func, maximize=maximize)
+            elif optimizer.lower() == 'greedy':
+                self.optimizer = mlopt.optimization.GreedyOptimizer(func=_func, maximize=maximize)
         else:
-            if hasattr(optimizer, 'optimizer'):
+            if hasattr(optimizer, 'optimize'):
                 self.optimizer = optimizer
             else:
                 raise AttributeError('Provided optimizer does not have a optimize method.')
