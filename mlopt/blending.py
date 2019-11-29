@@ -17,6 +17,8 @@ class BlendingTransformer:
 
     :param metric: Callable function to optimize.
     :param maximize: Boolean indicating whether `metric` wants to be maximized or minimized.
+    :param optimizer: Optimizer to use for optimizing blending weights. Can be either `greedy`, `pso` or a custom
+                      object with `optimize` method.
     """
     def __init__(self, metric, maximize, optimizer='greedy'):
         self.metric = metric
