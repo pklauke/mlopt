@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from sklearn.metrics import mean_absolute_error
+from __tests__ import mean_absolute_error
 
 from mlopt import BlendingTransformer
 
