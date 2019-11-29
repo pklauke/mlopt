@@ -3,8 +3,9 @@
 
 """This module contains unit tests for testing the mlopt.blending.BlendingGreedyTransformer class."""
 
-from sklearn.metrics import mean_absolute_error, roc_auc_score
+import numpy as np
 
+from __tests__ import mean_absolute_error, roc_auc_score
 from mlopt.blending import BlendingTransformer
 
 
@@ -40,8 +41,8 @@ def test_blended_results_minimize():
     problems."""
     target = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-    predictions_0 = [0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99]
-    predictions_1 = [0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02]
+    predictions_0 = np.array([0.01, 0.09, 0.17, 0.31, 0.39, 0.54, 0.59, 0.69, 0.77, 0.92, 0.99])
+    predictions_1 = np.array([0.00, 0.12, 0.19, 0.32, 0.42, 0.51, 0.61, 0.68, 0.81, 0.91, 1.02])
 
     bst = BlendingTransformer(metric=mean_absolute_error, maximize=False)
     p_blended = bst.fit_transform([predictions_0, predictions_1], target)
