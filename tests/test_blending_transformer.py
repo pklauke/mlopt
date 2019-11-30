@@ -5,7 +5,7 @@
 
 import numpy as np
 
-from __tests__ import mean_absolute_error, roc_auc_score
+from tests.metrics import mean_absolute_error, roc_auc_score
 from mlopt.blending import BlendingTransformer
 
 
