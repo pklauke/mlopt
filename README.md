@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/pklauke/mlopt.svg?branch=master)](https://travis-ci.com/pklauke/mlopt)
+
 # mlopt
 
 Python library including algorithms for optimization problems like weighted blending, hyperparameter tuning and more.
