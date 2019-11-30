@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/pklauke/mlopt.svg?branch=master)](https://travis-ci.com/pklauke/mlopt)
+[![codecov](https://codecov.io/gh/pklauke/mlopt/branch/master/graph/badge.svg)](https://codecov.io/gh/pklauke/mlopt)
 
 # mlopt
 
